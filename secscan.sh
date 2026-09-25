@@ -55,7 +55,7 @@ network_info "$target"
 
 test_ports(){
 	log_message "[*] Starting port and service scan on $target..." 
-	open_ports=$(nmap -sT -sV -T4 -p 21,2121 "$target" | grep -i 'open' | 
+	open_ports=$(nmap -sT -sV -T4 -p- "$target" | grep -i 'open' | 
 		     awk '{ line = $1 " - " $2 " - " $3 " - " 
 		     for(i=4;i<=NF;i++) {
 		     	line = line $i " "
@@ -74,12 +74,37 @@ test_ports(){
 test_ports
 # 			End Port & Service Enumeration
 decide_check(){
-	ftp_lines=$(echo "$open_ports" | grep -i "ftp")
-	if  [ -n "$ftp_lines" ];then
+	#flags
+	ftp_line=$(echo "$open_ports" | grep -i "ftp")
+	ssh_line=$(echo "$open_ports" | grep -i "ssh")
+	smb_line=$(echo "$open_ports" | grep -iE "netbios|microsoft-ds")
+	smtp_line=$(echo "$open_ports" | grep -i "smtp")
+	dns_line=$(echo "$open_ports" | grep -i "domain")
+	http_line=$(echo "$open_ports" | grep -i "http")
+	if  [ -n "$ftp_line" ];then
 		log_message "[+] FTP detected"
             	log_message "[*] Starting FTP enumeration..."
         fi
-	
+        if  [ -n "$ssh_line" ];then
+		log_message "[+] SSH detected"
+            	log_message "[*] Starting SSH enumeration..."
+        fi
+        if  [ -n "$smb_line" ];then
+		log_message "[+] SMB detected"
+            	log_message "[*] Starting SMB enumeration..."
+        fi
+        if  [ -n "$smtp_line" ];then
+		log_message "[+] SMTP detected"
+            	log_message "[*] Starting SMTP enumeration..."
+        fi
+        if  [ -n "$dns_line" ];then
+		log_message "[+] DNS detected"
+            	log_message "[*] Starting DNS enumeration..."
+        fi
+        if  [ -n "$http_line" ];then
+		log_message "[+] HTTP detected"
+            	log_message "[*] Starting HTTP enumeration..."
+        fi
 }
 decide_check
 
