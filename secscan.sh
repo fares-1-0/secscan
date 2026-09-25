@@ -55,7 +55,7 @@ network_info "$target"
 
 test_ports(){
 	log_message "[*] Starting port and service scan on $target..." 
-	open_ports=$(nmap -sT -sV -T4 -p- "$target" | grep -i 'open' | 
+	open_ports=$(nmap -sT -sV -T4 -p 21,2121 "$target" | grep -i 'open' | 
 		     awk '{ line = $1 " - " $2 " - " $3 " - " 
 		     for(i=4;i<=NF;i++) {
 		     	line = line $i " "
@@ -72,3 +72,14 @@ test_ports(){
 	fi
 }
 test_ports
+# 			End Port & Service Enumeration
+decide_check(){
+	ftp_lines=$(echo "$open_ports" | grep -i "ftp")
+	if  [ -n "$ftp_lines" ];then
+		log_message "[+] FTP detected"
+            	log_message "[*] Starting FTP enumeration..."
+        fi
+	
+}
+decide_check
+
