@@ -39,7 +39,7 @@ network_info(){
 	fi
 }
 
-log_message "[*] Scan started for target: $target"
+log_message "[*] Scan started for target: $target ..."
 if ! command -v nmap >/dev/null;then
 	log_message "[-] nmap is not installed" 
 	exit 1
@@ -53,5 +53,22 @@ host_or_not "$target"
 network_info "$target"
 			#	END OF RECONNAISSANCE
 
-
-
+test_ports(){
+	log_message "[*] Starting port and service scan on $target..." 
+	open_ports=$(nmap -sT -sV -T4 -p- "$target" | grep -i 'open' | 
+		     awk '{ line = $1 " - " $2 " - " $3 " - " 
+		     for(i=4;i<=NF;i++) {
+		     	line = line $i " "
+		     }
+		     	print line}'
+		    ) 
+	if [ -n "$open_ports" ];then
+		log_message "[+] Open ports found:"
+		echo "$open_ports" | while read  -r line ;do
+			log_message "	  $line"
+		done
+	else
+		log_message "[-] No open ports found"
+	fi
+}
+test_ports
