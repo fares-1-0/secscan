@@ -20,6 +20,8 @@ log_scan_message() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$log_file" "$scan_file"
 }
 
+handle_flag "$1"
+
 if [ $# -ne 1 ];then
 	log_message "Usage: $0 <target>"
 	exit 1
