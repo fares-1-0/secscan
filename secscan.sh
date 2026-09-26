@@ -1,15 +1,19 @@
 #!/bin/bash
 mkdir -p local report
-Log_file='./local/app.log'
+log_file='./local/app.log'
 scan_file='./report/scan.txt'
 finding_file='./report/finding.txt'
+summary_file='./report/summary.txt'
+: > "$log_file"
 : > "$scan_file"
+: > "$finding_file"
+: > "$summary_file"
 
 log_message() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$Log_file"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$log_file"
 }
 log_scan_message() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$Log_file" "$scan_file"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$log_file" "$scan_file"
 }
 
 if [ $# -ne 1 ];then
@@ -172,7 +176,17 @@ check_and_enum(){
 check_and_enum
 
 generate_report(){
-	grep -E "\[!\]|Evidence:" "$Log_file" > "$finding_file"
+	grep -E "\[!\]|Evidence:" "$log_file" > "$finding_file"
 }
 generate_report
 
+generate_summary(){
+	{
+	echo "Target: "$target""
+	echo "Scan Date: $(date '+%Y-%m-%d %H:%M:%S')"
+	echo "Open Ports Found: $(echo "$open_ports" | grep -c '/tcp')"
+	echo "Vulnerabilities Found: $(grep -c '\[!\]' "$finding_file")"
+	} >"$summary_file"
+}
+generate_summary
+# finish
