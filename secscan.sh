@@ -1,6 +1,10 @@
 #!/bin/bash
 mkdir -p local report
 Log_file='./local/app.log'
+scan_file='./report/scan.txt'
+finding_file='./report/finding.txt'
+summary_file='./report/summary.txt'
+
 log_message() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$Log_file"
 }
@@ -16,7 +20,7 @@ is_reachable(){
 	(timeout 7 nmap -sn "$target"| grep -q -i "Host is up") >/dev/null 2>&1)
 }
 host_or_not(){
-	local host_name=$(nmblookup -A "$target" | grep '<00>' | grep -v -i 'group' | awk '{print $1}'| head -n 1)
+	host_name=$(nmblookup -A "$target" | grep '<00>' | grep -v -i 'group' | awk '{print $1}'| head -n 1)
 	if [ -n "$host_name" ];then
 		log_message "[+] Host name: $host_name"
 	else
@@ -133,11 +137,33 @@ decide_check(){
         	echo
 		log_message "[+] DNS detected"
             	log_message "[*] Starting DNS enumeration..."
+            	dns_enum=$(dig axfr @"$target" "$host_name")
+            	if echo "$dns_enum" | grep -qi "xfr size";then
+            		log_message "[!] DNS zone transfer enumeration: VULNERABLE"
+            		log_message "Evidence: $dns_enum"
+            	else
+            		log_message "[+] DNS zone transfer enumeration not detected"
+          	fi 
         fi
         if  [ -n "$http_line" ];then
         	echo
 		log_message "[+] HTTP detected"
             	log_message "[*] Starting HTTP enumeration..."
+            	http_head=$(curl -sI http://"$target")
+            	http_robot=$(curl -s http://"$target"/robots.txt)
+            	if [ -n "$http_head" ]; then
+    			log_message "[!] HTTP headers detected"
+    			log_message "Evidence: $http_head"
+		else
+    			log_message "[-] HTTP headers not retrieved"
+		fi
+            	if ! echo "$http_robot" | grep -iq "<title>404 Not Found</title>";then
+            		log_message "[!] robots.txt found"
+            		log_message "Evidence: $http_robot"
+            		echo "$http_robot"
+            	else
+            		log_message "[+] robots.txt not found (404)"
+            	fi
         fi
 }
 decide_check
