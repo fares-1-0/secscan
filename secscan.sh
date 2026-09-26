@@ -122,4 +122,5 @@ generate_summary(){
 	} >"$summary_file"
 }
 generate_summary
+generate_html_report
 # finish

@@ -1,0 +1,4 @@
+Target: 192.168.50.128
+Scan Date: 2026-09-26 12:59:32
+Open Ports Found: 30
+Vulnerabilities Found: 4
